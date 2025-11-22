@@ -14,7 +14,7 @@ func main() {
 		panic(err)
 	}
 
-	p := tea.NewProgram(ui.New(root))
+	p := tea.NewProgram(ui.New(root), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 	}
