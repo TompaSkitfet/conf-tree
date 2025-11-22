@@ -40,7 +40,10 @@ func (m Model) View() string {
 	selected := m.Tree.Selected()
 	right := "No selection"
 	if selected != nil {
-		right = selected.String()
+		right = ""
+		for _, v := range selected.Children {
+			right += v.Key + "\n"
+		}
 	}
 	return TwoPanels(m.Tree.View(), right)
 }
