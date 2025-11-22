@@ -4,17 +4,19 @@ import (
 	"fmt"
 
 	"github.com/TompaSkitfet/conf-tree/internal/config"
+	"github.com/TompaSkitfet/conf-tree/internal/ui"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
-	data, err := config.LoadJSON()
+	root, err := config.LoadJSON()
 	if err != nil {
 		panic(err)
 	}
 
-	for _, child := range data.Children {
-		for _, grandChild := range child.Children {
-			fmt.Printf("%s: %v\n", grandChild.Key, grandChild.Value)
-		}
+	p := tea.NewProgram(ui.New(root))
+	if err := p.Start(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
 	}
+
 }
