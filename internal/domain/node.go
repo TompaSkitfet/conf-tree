@@ -14,6 +14,7 @@ type Node struct {
 	Key      string
 	Type     NodeType
 	Value    any
+	Parent   *Node
 	Children []*Node
 }
 

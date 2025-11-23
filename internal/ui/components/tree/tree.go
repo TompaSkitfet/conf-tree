@@ -1,9 +1,8 @@
 package tree
 
 import (
-	"strings"
-
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
+	"strings"
 )
 
 type Tree struct {
@@ -37,6 +36,18 @@ func (t *Tree) MoveUp() {
 func (t *Tree) MoveDown() {
 	if t.Cursor < len(t.Nodes)-1 {
 		t.Cursor++
+	}
+}
+
+func (t *Tree) MoveRight() {
+	if t.Selected().Children != nil {
+		t.Nodes = t.Selected().Children
+	}
+}
+
+func (t *Tree) MoveLeft() {
+	if t.Selected().Parent.Parent.Children != nil {
+		t.Nodes = t.Selected().Parent.Parent.Children
 	}
 }
 

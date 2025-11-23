@@ -35,6 +35,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Tree.MoveUp()
 		case key.Matches(msg, Keys.Down):
 			m.Tree.MoveDown()
+		case key.Matches(msg, Keys.Right):
+			m.Tree.MoveRight()
+		case key.Matches(msg, Keys.Left):
+			m.Tree.MoveLeft()
 		}
 
 	}
@@ -45,10 +49,7 @@ func (m Model) View() string {
 	selected := m.Tree.Selected()
 	right := "No selection"
 	if selected != nil {
-		right = ""
-		for _, v := range selected.Children {
-			right += v.Key + "\n"
-		}
+		right = BuildRightTree(selected)
 	}
 	return TwoPanels(m.Tree.View(), right)
 }
