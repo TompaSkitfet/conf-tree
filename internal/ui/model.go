@@ -8,7 +8,9 @@ import (
 )
 
 type Model struct {
-	Tree tree.Tree
+	Tree   tree.Tree
+	Width  int
+	Height int
 }
 
 func New(root *domain.Node) Model {
@@ -21,6 +23,10 @@ func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.Width = msg.Width
+		m.Height = msg.Height
+		UpdatePanelWidths(m.Width, m.Height)
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, Keys.Quit):
