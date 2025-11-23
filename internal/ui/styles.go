@@ -11,8 +11,8 @@ var (
 )
 
 func UpdatePanelWidths(terminalWidth, terminalHeight int) {
-	panelWidth := (terminalWidth / 2) - 2
-	TopBar = Border.Width(terminalWidth - 3).Height(3)
+	panelWidth := (terminalWidth / 4) - 2
+	TopBar = Border.Width((panelWidth * 2) + 2).Height(3)
 	LeftPanel = Border.Width(panelWidth).Height(terminalHeight - 10)
 	RightPanel = Border.Width(panelWidth).Height(terminalHeight - 10)
 }
