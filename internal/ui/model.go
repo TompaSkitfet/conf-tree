@@ -5,12 +5,15 @@ import (
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/tree"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
 type Model struct {
-	Tree   tree.Tree
-	Width  int
-	Height int
+	Tree        tree.Tree
+	Width       int
+	Height      int
+	ShowOverlay bool
 }
 
 func New(root *domain.Node) Model {
@@ -39,6 +42,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Tree.MoveRight()
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
+		case msg.String() == "o":
+			m.ShowOverlay = !m.ShowOverlay
 		}
 
 	}
@@ -51,5 +56,15 @@ func (m Model) View() string {
 	if selected != nil {
 		right = BuildRightTree(selected)
 	}
-	return TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
+
+	base := TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
+
+	if m.ShowOverlay {
+		overlayPanel := lipgloss.NewStyle().
+			Width(20).Height(2).Border(lipgloss.RoundedBorder()).Align(lipgloss.Center).Render(selected.Key)
+		return overlay.Composite(overlayPanel, base, overlay.Center, overlay.Center, 0, 0)
+
+	}
+
+	return base
 }

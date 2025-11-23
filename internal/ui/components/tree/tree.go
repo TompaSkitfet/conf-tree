@@ -1,8 +1,10 @@
 package tree
 
 import (
-	"github.com/TompaSkitfet/conf-tree/internal/domain"
+	"fmt"
 	"strings"
+
+	"github.com/TompaSkitfet/conf-tree/internal/domain"
 )
 
 type Tree struct {
@@ -22,7 +24,16 @@ func (t Tree) View() string {
 		if i == t.Cursor {
 			cursor = "➤ "
 		}
-		b.WriteString(cursor + n.Key + "\n")
+		switch n.Type {
+		case domain.ObjectNode:
+			b.WriteString(cursor + " " + n.Key + "\n")
+		case domain.ArrayNode:
+			b.WriteString(cursor + " " + n.Key + "\n")
+		case domain.ValueNode:
+			b.WriteString(fmt.Sprintf("%s  %s: %v\n", cursor, n.Key, n.Value))
+		default:
+			b.WriteString(cursor + "" + n.Key + "\n")
+		}
 	}
 	return b.String()
 }

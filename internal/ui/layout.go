@@ -23,17 +23,21 @@ func BuildRightTree(selectedNode *domain.Node) string {
 
 	for _, v := range selectedNode.Children {
 		if v.Children != nil {
-			branch := tree.New().Root(fmt.Sprintf("%s ", v.Key))
+			branch := tree.New().Root(fmt.Sprintf(" %s", v.Key))
 			for _, c := range v.Children {
 				if c.Value != nil {
-					branch.Child(fmt.Sprintf("%s: %v", c.Key, c.Value))
+					branch.Child(fmt.Sprintf(" %s: %v", c.Key, c.Value))
 				} else {
-					branch.Child(fmt.Sprintf("%s ", c.Key))
+					if c.Type == domain.ObjectNode {
+						branch.Child(fmt.Sprintf(" %s", c.Key))
+					} else {
+						branch.Child(fmt.Sprintf(" %s", c.Key))
+					}
 				}
 			}
 			t.Child(branch)
 		} else {
-			t.Child(fmt.Sprintf("%s: %v", v.Key, v.Value))
+			t.Child(fmt.Sprintf(" %s: %v", v.Key, v.Value))
 		}
 	}
 	return t.String()
