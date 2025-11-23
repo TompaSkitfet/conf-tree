@@ -42,12 +42,14 @@ func (t *Tree) MoveDown() {
 func (t *Tree) MoveRight() {
 	if t.Selected().Children != nil {
 		t.Nodes = t.Selected().Children
+		t.Cursor = 0
 	}
 }
 
 func (t *Tree) MoveLeft() {
-	if t.Selected().Parent.Parent.Children != nil {
+	if t.Selected().Parent.Parent != nil {
 		t.Nodes = t.Selected().Parent.Parent.Children
+		t.Cursor = 0
 	}
 }
 

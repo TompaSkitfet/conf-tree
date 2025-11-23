@@ -51,5 +51,5 @@ func (m Model) View() string {
 	if selected != nil {
 		right = BuildRightTree(selected)
 	}
-	return TwoPanels(m.Tree.View(), right)
+	return TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
 }

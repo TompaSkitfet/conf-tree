@@ -8,12 +8,12 @@ import (
 	"github.com/charmbracelet/lipgloss/tree"
 )
 
-func TwoPanels(left, right string) string {
+func TwoPanels(left, right, breadcrumb string) string {
 	panels := lipgloss.JoinHorizontal(lipgloss.Top,
 		LeftPanel.Render(left),
 		RightPanel.Render(right))
 
-	layout := lipgloss.JoinVertical(lipgloss.Left, TopBar.Render("Json explorer"), panels)
+	layout := lipgloss.JoinVertical(lipgloss.Left, TopBar.Render("Json explorer"), breadcrumb, panels)
 	return layout
 
 }
@@ -33,4 +33,14 @@ func BuildRightTree(selectedNode *domain.Node) string {
 		}
 	}
 	return t.String()
+}
+
+func BuildBreadcrumbs(selectedNode *domain.Node) string {
+	str := ""
+	current := selectedNode
+	for current != nil {
+		str = fmt.Sprintf("%s/", current.Key) + str
+		current = current.Parent
+	}
+	return str
 }
