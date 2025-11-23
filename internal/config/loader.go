@@ -8,8 +8,8 @@ import (
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
 )
 
-func LoadJSON() (*domain.Node, error) {
-	raw, err := os.ReadFile("test.json")
+func LoadJSON(path string) (*domain.Node, error) {
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/TompaSkitfet/conf-tree/internal/config"
 	"github.com/TompaSkitfet/conf-tree/internal/ui"
@@ -9,9 +10,18 @@ import (
 )
 
 func main() {
-	root, err := config.LoadJSON()
+
+	if len(os.Args) < 2 {
+		fmt.Println("Specify a json file 'ctree <file.json>'")
+		os.Exit(1)
+	}
+
+	filepath := os.Args[1]
+
+	root, err := config.LoadJSON(filepath)
 	if err != nil {
-		panic(err)
+		fmt.Println("Specify a json file 'ctree <file.json>'")
+		os.Exit(1)
 	}
 
 	p := tea.NewProgram(ui.New(root), tea.WithAltScreen())
