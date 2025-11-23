@@ -1,21 +1,22 @@
 # conf-tree 🌳
 
-A terminal-based user interface (TUI) for navigating and editing large JSON configuration files through an intuitive tree view.
+> ⚠️ **Work in Progress** - This project is in early development. Features are being actively developed and the API may change.
+
+A terminal-based user interface (TUI) for navigating large JSON configuration files through an intuitive tree view.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Go Version](https://img.shields.io/badge/go-1.24.5-blue.svg)
 
 ## Overview
 
-**conf-tree** is a powerful command-line tool designed to make working with large JSON files easier and more intuitive. Instead of manually scrolling through thousands of lines of JSON, conf-tree presents your data in a navigable tree structure with a clean, two-panel interface.
+**conf-tree** is a command-line tool for viewing large JSON files in a more intuitive way. Instead of manually scrolling through thousands of lines of JSON, conf-tree presents your data in a navigable tree structure with a clean, two-panel interface.
 
-## Features
+## Current Features
 
-- 📊 **Tree View Navigation** - Browse JSON structures as an expandable tree
+- 📊 **Tree View Navigation** - Browse JSON structures in a tree format
 - 🎨 **Dual-Panel Interface** - Left panel shows the tree structure, right panel displays children of the selected node
-- ⌨️ **Keyboard-Driven** - Fast navigation using vim-style keybindings
+- ⌨️ **Basic Keyboard Navigation** - Navigate using arrow keys and vim-style keybindings
 - 🚀 **Built with Bubble Tea** - Smooth, responsive terminal UI
-- 📦 **Handles Complex Structures** - Supports nested objects and arrays
 
 ## Installation
 
