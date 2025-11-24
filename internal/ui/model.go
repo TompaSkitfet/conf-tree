@@ -4,31 +4,30 @@ import (
 	"fmt"
 
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
+	"github.com/TompaSkitfet/conf-tree/internal/ui/components/modal"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/tree"
 	"github.com/charmbracelet/bubbles/key"
-	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
 type Model struct {
-	Tree        tree.Tree
-	Width       int
-	Height      int
+	Tree   tree.Tree
+	Width  int
+	Height int
+
 	ShowOverlay bool
-	Input       textinput.Model
+	EditingBool bool
+	InputModal  modal.InputModal
+	BoolModal   modal.BoolModal
 }
 
 func New(root *domain.Node) Model {
-	ti := textinput.New()
-	ti.Focus()
-	ti.CharLimit = 64
-	ti.Width = 30
 	return Model{
-		Tree:  tree.New(root.Children),
-		Input: ti,
+		Tree:       tree.New(root.Children),
+		InputModal: modal.InputModal{},
 	}
+
 }
 
 func (m Model) Init() tea.Cmd { return nil }
@@ -43,13 +42,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		UpdatePanelWidths(m.Width, m.Height)
 	case tea.KeyMsg:
 		switch {
-		case m.ShowOverlay:
+		case m.ShowOverlay && m.EditingBool:
 			var cmd tea.Cmd
-			m.Input, cmd = m.Input.Update(msg)
-			if msg.String() == "esc" {
+			m.BoolModal, cmd = m.BoolModal.Update(msg)
+
+			if m.BoolModal.Done {
+				current.Value = m.BoolModal.Value
 				m.ShowOverlay = false
+				m.EditingBool = false
 			}
-			if msg.String() == "enter" {
+			return m, cmd
+
+		case m.ShowOverlay && !m.EditingBool:
+			var cmd tea.Cmd
+			m.InputModal, cmd = m.InputModal.Update(msg)
+			if m.InputModal.Done {
+				if m.InputModal.Value != "" {
+					current.Value = m.InputModal.Value
+				}
 				m.ShowOverlay = false
 			}
 			return m, cmd
@@ -63,13 +73,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if current.Type != domain.ValueNode {
 				m.Tree.MoveRight()
 			} else if m.Tree.Current.Type == domain.ValueNode {
-				m.Input.SetValue(fmt.Sprintf("%v", m.Tree.Current.Value))
-				m.ShowOverlay = !m.ShowOverlay
+				switch v := current.Value.(type) {
+				case bool:
+					m.BoolModal = modal.NewBoolModal(v)
+					m.EditingBool = true
+					m.ShowOverlay = true
+				default:
+					m.InputModal = modal.NewInputModal(fmt.Sprintf("%v", v))
+					m.EditingBool = false
+					m.ShowOverlay = true
+				}
 			}
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
 		}
-
 	}
 	return m, nil
 }
@@ -84,9 +101,11 @@ func (m Model) View() string {
 	base := TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
 
 	if m.ShowOverlay {
-		overlayPanel := lipgloss.NewStyle().
-			Width(20).Height(2).Border(lipgloss.RoundedBorder()).Align(lipgloss.Center).Render(m.Input.View())
-		return overlay.Composite(overlayPanel, base, overlay.Center, overlay.Center, 0, 0)
+		if m.EditingBool {
+			return overlay.Composite(BuildOverlay(m.BoolModal.View()), base, overlay.Center, overlay.Center, 0, 0)
+		} else {
+			return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
+		}
 
 	}
 
