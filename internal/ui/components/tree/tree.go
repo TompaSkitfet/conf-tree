@@ -31,7 +31,11 @@ func (t Tree) View() string {
 		case domain.ArrayNode:
 			b.WriteString(cursor + " " + n.Key + "\n")
 		case domain.ValueNode:
-			b.WriteString(fmt.Sprintf("%s  %s: %v\n", cursor, n.Key, n.Value))
+			if n.Modified == true {
+				b.WriteString(fmt.Sprintf("%s  %s: %v *\n", cursor, n.Key, n.Value))
+			} else {
+				b.WriteString(fmt.Sprintf("%s  %s: %v\n", cursor, n.Key, n.Value))
+			}
 		default:
 			b.WriteString(cursor + "" + n.Key + "\n")
 		}

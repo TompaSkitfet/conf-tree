@@ -48,6 +48,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			if m.BoolModal.Done {
 				current.Value = m.BoolModal.Value
+				current.Modified = true
 				m.ShowOverlay = false
 				m.EditingBool = false
 			}
@@ -59,6 +60,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.InputModal.Done {
 				if m.InputModal.Value != "" {
 					current.Value = m.InputModal.Value
+					current.Modified = true
 				}
 				m.ShowOverlay = false
 			}

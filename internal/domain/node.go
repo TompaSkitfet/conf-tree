@@ -12,6 +12,7 @@ type Node struct {
 	Key      string
 	Type     NodeType
 	Value    any
+	Modified bool
 	Parent   *Node
 	Children []*Node
 }
