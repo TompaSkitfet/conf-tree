@@ -126,5 +126,6 @@ func (m Model) View() string {
 		}
 	}
 	helpView := m.Help.View(Keys)
+
 	return lipgloss.JoinVertical(lipgloss.Left, base, helpView)
 }
