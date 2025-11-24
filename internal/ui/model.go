@@ -7,8 +7,10 @@ import (
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/modal"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/tree"
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	overlay "github.com/rmhubbert/bubbletea-overlay"
 )
 
@@ -23,6 +25,8 @@ type Model struct {
 	EditingBool bool
 	InputModal  modal.InputModal
 	BoolModal   modal.BoolModal
+
+	Help help.Model
 }
 
 func New(root *domain.Node, fileData domain.FileData) Model {
@@ -31,8 +35,8 @@ func New(root *domain.Node, fileData domain.FileData) Model {
 		Root:       root,
 		FileData:   fileData,
 		InputModal: modal.InputModal{},
+		Help:       help.New(),
 	}
-
 }
 
 func (m Model) Init() tea.Cmd { return nil }
@@ -72,6 +76,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, cmd
 		case key.Matches(msg, Keys.Save):
 			config.SaveToFile(m.Root, m.FileData)
+			newData, err := config.LoadJSON(m.FileData.Name)
+			if err != nil {
+				panic(err)
+			}
+			m.Tree = tree.New(newData.Children)
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, Keys.Up):
@@ -116,5 +125,6 @@ func (m Model) View() string {
 			return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
 		}
 	}
-	return base
+	helpView := m.Help.View(Keys)
+	return lipgloss.JoinVertical(lipgloss.Left, base, helpView)
 }
