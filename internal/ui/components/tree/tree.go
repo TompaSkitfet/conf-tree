@@ -8,8 +8,9 @@ import (
 )
 
 type Tree struct {
-	Nodes  []*domain.Node
-	Cursor int
+	Nodes   []*domain.Node
+	Cursor  int
+	Current *domain.Node
 }
 
 func New(nodes []*domain.Node) Tree {
@@ -42,18 +43,21 @@ func (t *Tree) MoveUp() {
 	if t.Cursor > 0 {
 		t.Cursor--
 	}
+	t.Current = t.Nodes[t.Cursor]
 }
 
 func (t *Tree) MoveDown() {
 	if t.Cursor < len(t.Nodes)-1 {
 		t.Cursor++
 	}
+	t.Current = t.Nodes[t.Cursor]
 }
 
 func (t *Tree) MoveRight() {
 	if t.Selected().Children != nil {
 		t.Nodes = t.Selected().Children
 		t.Cursor = 0
+		t.Current = t.Nodes[t.Cursor]
 	}
 }
 
@@ -61,6 +65,7 @@ func (t *Tree) MoveLeft() {
 	if t.Selected().Parent.Parent != nil {
 		t.Nodes = t.Selected().Parent.Parent.Children
 		t.Cursor = 0
+		t.Current = t.Nodes[t.Cursor]
 	}
 }
 
