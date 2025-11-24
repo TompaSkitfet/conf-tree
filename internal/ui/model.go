@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 
+	"github.com/TompaSkitfet/conf-tree/internal/config"
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/modal"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/tree"
@@ -12,9 +13,11 @@ import (
 )
 
 type Model struct {
-	Tree   tree.Tree
-	Width  int
-	Height int
+	Tree     tree.Tree
+	Root     *domain.Node
+	FileData domain.FileData
+	Width    int
+	Height   int
 
 	ShowOverlay bool
 	EditingBool bool
@@ -22,9 +25,11 @@ type Model struct {
 	BoolModal   modal.BoolModal
 }
 
-func New(root *domain.Node) Model {
+func New(root *domain.Node, fileData domain.FileData) Model {
 	return Model{
 		Tree:       tree.New(root.Children),
+		Root:       root,
+		FileData:   fileData,
 		InputModal: modal.InputModal{},
 	}
 
@@ -65,6 +70,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ShowOverlay = false
 			}
 			return m, cmd
+		case key.Matches(msg, Keys.Save):
+			config.SaveToFile(m.Root, m.FileData)
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, Keys.Up):
@@ -108,8 +115,6 @@ func (m Model) View() string {
 		} else {
 			return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
 		}
-
 	}
-
 	return base
 }

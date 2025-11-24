@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/TompaSkitfet/conf-tree/internal/config"
+	"github.com/TompaSkitfet/conf-tree/internal/domain"
 	"github.com/TompaSkitfet/conf-tree/internal/ui"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -17,6 +18,7 @@ func main() {
 	}
 
 	filepath := os.Args[1]
+	fileData := domain.FileData{Name: filepath, FileType: "json"}
 
 	root, err := config.LoadJSON(filepath)
 	if err != nil {
@@ -24,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	p := tea.NewProgram(ui.New(root), tea.WithAltScreen())
+	p := tea.NewProgram(ui.New(root, fileData), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 	}
