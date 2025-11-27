@@ -2,7 +2,6 @@ package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 
 	"github.com/TompaSkitfet/conf-tree/internal/domain"

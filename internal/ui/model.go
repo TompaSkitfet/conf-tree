@@ -27,6 +27,8 @@ type Model struct {
 	BoolModal   modal.BoolModal
 
 	Help help.Model
+
+	Error error
 }
 
 func New(root *domain.Node, fileData domain.FileData) Model {
@@ -77,11 +79,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, Keys.Save):
 			err := config.SaveToFile(m.Root, m.FileData)
 			if err != nil {
-				fmt.Print(err)
+				m.Error = err
 			}
 			newData, err := config.LoadJSON(m.FileData.Name)
 			if err != nil {
-				panic(err)
+				m.Error = err
 			}
 			m.Root = newData
 			m.Tree = tree.New(newData.Children)
