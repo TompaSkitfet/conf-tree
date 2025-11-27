@@ -80,10 +80,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			err := config.SaveToFile(m.Root, m.FileData)
 			if err != nil {
 				m.Error = err
+				return m, nil
 			}
 			newData, err := config.LoadJSON(m.FileData.Name)
 			if err != nil {
 				m.Error = err
+				return m, nil
 			}
 			m.Root = newData
 			m.Tree = tree.New(newData.Children)
@@ -116,6 +118,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+
 	selected := m.Tree.Selected()
 	right := "No selection"
 	if selected != nil {
@@ -123,6 +126,10 @@ func (m Model) View() string {
 	}
 
 	base := TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
+
+	if m.Error != nil {
+		return overlay.Composite(m.Error.Error(), base, overlay.Center, overlay.Center, 0, 0)
+	}
 
 	if m.ShowOverlay {
 		if m.EditingBool {
