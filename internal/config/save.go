@@ -13,7 +13,6 @@ func SaveToFile(data *domain.Node, fileData domain.FileData) error {
 
 	raw, err := json.MarshalIndent(jsonData, "", "  ")
 	if err != nil {
-		fmt.Print(err)
 		return err
 	}
 	return os.WriteFile(fileData.Name, raw, 0644)
