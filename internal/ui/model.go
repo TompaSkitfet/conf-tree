@@ -53,7 +53,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		UpdatePanelWidths(m.Width, m.Height)
 	case tea.KeyMsg:
 		switch {
-		case m.Error != nil:
+		case m.Error != nil && key.Matches(msg, Keys.Quit):
 			m.Error = nil
 		case m.ShowOverlay && m.EditingBool:
 			var cmd tea.Cmd
@@ -91,6 +91,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Root = newData
 			m.Tree = tree.New(newData.Children)
+			return m, nil
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, Keys.Up):
