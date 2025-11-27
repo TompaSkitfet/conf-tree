@@ -27,6 +27,8 @@ type Model struct {
 	BoolModal   modal.BoolModal
 
 	Help help.Model
+
+	Error error
 }
 
 func New(root *domain.Node, fileData domain.FileData) Model {
@@ -51,6 +53,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		UpdatePanelWidths(m.Width, m.Height)
 	case tea.KeyMsg:
 		switch {
+		case m.Error != nil && key.Matches(msg, Keys.Quit):
+			m.Error = nil
 		case m.ShowOverlay && m.EditingBool:
 			var cmd tea.Cmd
 			m.BoolModal, cmd = m.BoolModal.Update(msg)
@@ -75,12 +79,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, cmd
 		case key.Matches(msg, Keys.Save):
-			config.SaveToFile(m.Root, m.FileData)
+			err := config.SaveToFile(m.Root, m.FileData)
+			if err != nil {
+				m.Error = err
+				return m, nil
+			}
 			newData, err := config.LoadJSON(m.FileData.Name)
 			if err != nil {
-				panic(err)
+				m.Error = err
+				return m, nil
 			}
+			m.Root = newData
 			m.Tree = tree.New(newData.Children)
+			return m, nil
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
 		case key.Matches(msg, Keys.Up):
@@ -110,6 +121,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
+
 	selected := m.Tree.Selected()
 	right := "No selection"
 	if selected != nil {
@@ -117,6 +129,10 @@ func (m Model) View() string {
 	}
 
 	base := TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
+
+	if m.Error != nil {
+		return overlay.Composite(m.Error.Error(), base, overlay.Center, overlay.Center, 0, 0)
+	}
 
 	if m.ShowOverlay {
 		if m.EditingBool {
@@ -126,6 +142,5 @@ func (m Model) View() string {
 		}
 	}
 	helpView := m.Help.View(Keys)
-
 	return lipgloss.JoinVertical(lipgloss.Left, base, helpView)
 }
