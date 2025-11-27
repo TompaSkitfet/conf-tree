@@ -75,11 +75,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, cmd
 		case key.Matches(msg, Keys.Save):
-			config.SaveToFile(m.Root, m.FileData)
+			err := config.SaveToFile(m.Root, m.FileData)
+			if err != nil {
+				fmt.Print(err)
+			}
 			newData, err := config.LoadJSON(m.FileData.Name)
 			if err != nil {
 				panic(err)
 			}
+			m.Root = newData
 			m.Tree = tree.New(newData.Children)
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
