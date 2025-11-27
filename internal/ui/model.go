@@ -53,6 +53,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		UpdatePanelWidths(m.Width, m.Height)
 	case tea.KeyMsg:
 		switch {
+		case m.Error != nil:
+			m.Error = nil
 		case m.ShowOverlay && m.EditingBool:
 			var cmd tea.Cmd
 			m.BoolModal, cmd = m.BoolModal.Update(msg)
