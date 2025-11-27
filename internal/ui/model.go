@@ -15,11 +15,12 @@ import (
 )
 
 type Model struct {
-	Tree     tree.Tree
-	Root     *domain.Node
-	FileData domain.FileData
-	Width    int
-	Height   int
+	Tree         tree.Tree
+	Root         *domain.Node
+	FileData     domain.FileData
+	SearchResult []*domain.Node
+	Width        int
+	Height       int
 
 	ShowOverlay bool
 	EditingBool bool
@@ -44,7 +45,7 @@ func New(root *domain.Node, fileData domain.FileData) Model {
 func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	current := m.Tree.Current
+	current := m.Tree.Selected()
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -115,13 +116,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
+		case key.Matches(msg, Keys.Search):
+			if m.SearchResult != nil {
+				m.SearchResult = nil
+			} else {
+				m.SearchResult = FuzzySearch("auth", m.Root)
+			}
 		}
 	}
 	return m, nil
 }
 
 func (m Model) View() string {
-
 	selected := m.Tree.Selected()
 	right := "No selection"
 	if selected != nil {
@@ -132,6 +138,14 @@ func (m Model) View() string {
 
 	if m.Error != nil {
 		return overlay.Composite(m.Error.Error(), base, overlay.Center, overlay.Center, 0, 0)
+	}
+	if m.SearchResult != nil {
+		var result string
+		for _, r := range m.SearchResult {
+			result = lipgloss.JoinVertical(lipgloss.Left, result, r.Key)
+		}
+
+		return overlay.Composite(BuildOverlay(result), base, overlay.Center, overlay.Center, 0, 0)
 	}
 
 	if m.ShowOverlay {
