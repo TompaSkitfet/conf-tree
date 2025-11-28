@@ -15,21 +15,22 @@ import (
 )
 
 type Model struct {
-	Tree         tree.Tree
-	Root         *domain.Node
-	FileData     domain.FileData
-	SearchResult []*domain.Node
-	Width        int
-	Height       int
+	Tree     tree.Tree
+	Root     *domain.Node
+	FileData domain.FileData
+	width    int
+	height   int
 
+	ShowSearch  bool
 	ShowOverlay bool
 	EditingBool bool
+	SearchModal modal.SearchModal
 	InputModal  modal.InputModal
 	BoolModal   modal.BoolModal
 
 	Help help.Model
 
-	Error error
+	err error
 }
 
 func New(root *domain.Node, fileData domain.FileData) Model {
@@ -49,13 +50,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.Width = msg.Width
-		m.Height = msg.Height
-		UpdatePanelWidths(m.Width, m.Height)
+		m.width = msg.Width
+		m.height = msg.Height
+		UpdatePanelWidths(m.width, m.height)
+
 	case tea.KeyMsg:
 		switch {
-		case m.Error != nil && key.Matches(msg, Keys.Quit):
-			m.Error = nil
+		case m.err != nil && key.Matches(msg, Keys.Quit):
+			m.err = nil
 		case m.ShowOverlay && m.EditingBool:
 			var cmd tea.Cmd
 			m.BoolModal, cmd = m.BoolModal.Update(msg)
@@ -79,30 +81,42 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.ShowOverlay = false
 			}
 			return m, cmd
+		case m.ShowSearch:
+			var cmd tea.Cmd
+			m.SearchModal, cmd = m.SearchModal.Update(msg)
+			if m.SearchModal.Done {
+				m.ShowSearch = false
+			}
+			return m, cmd
+
 		case key.Matches(msg, Keys.Save):
 			err := config.SaveToFile(m.Root, m.FileData)
 			if err != nil {
-				m.Error = err
+				m.err = err
 				return m, nil
 			}
 			newData, err := config.LoadJSON(m.FileData.Name)
 			if err != nil {
-				m.Error = err
+				m.err = err
 				return m, nil
 			}
 			m.Root = newData
 			m.Tree = tree.New(newData.Children)
 			return m, nil
+
 		case key.Matches(msg, Keys.Quit):
 			return m, tea.Quit
+
 		case key.Matches(msg, Keys.Up):
 			m.Tree.MoveUp()
+
 		case key.Matches(msg, Keys.Down):
 			m.Tree.MoveDown()
+
 		case key.Matches(msg, Keys.Right):
 			if current.Type != domain.ValueNode {
 				m.Tree.MoveRight()
-			} else if m.Tree.Current.Type == domain.ValueNode {
+			} else if current.Type == domain.ValueNode {
 				switch v := current.Value.(type) {
 				case bool:
 					m.BoolModal = modal.NewBoolModal(v)
@@ -117,11 +131,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
 		case key.Matches(msg, Keys.Search):
-			if m.SearchResult != nil {
-				m.SearchResult = nil
-			} else {
-				m.SearchResult = FuzzySearch("auth", m.Root)
-			}
+			m.SearchModal = modal.NewSearchModal(m.Root)
+			m.ShowSearch = true
 		}
 	}
 	return m, nil
@@ -136,16 +147,16 @@ func (m Model) View() string {
 
 	base := TwoPanels(m.Tree.View(), right, BuildBreadcrumbs(selected))
 
-	if m.Error != nil {
-		return overlay.Composite(m.Error.Error(), base, overlay.Center, overlay.Center, 0, 0)
+	if m.err != nil {
+		return overlay.Composite(m.err.Error(), base, overlay.Center, overlay.Center, 0, 0)
 	}
-	if m.SearchResult != nil {
-		var result string
-		for _, r := range m.SearchResult {
-			result = lipgloss.JoinVertical(lipgloss.Left, result, r.Key)
-		}
 
-		return overlay.Composite(BuildOverlay(result), base, overlay.Center, overlay.Center, 0, 0)
+	if m.ShowSearch {
+		var result string
+		for _, v := range m.SearchModal.Result {
+			result = lipgloss.JoinVertical(lipgloss.Left, result, v.Key)
+		}
+		return overlay.Composite(BuildSearchBox(m.SearchModal, result), base, overlay.Center, overlay.Center, 0, 0)
 	}
 
 	if m.ShowOverlay {
