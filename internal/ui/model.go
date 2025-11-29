@@ -152,11 +152,7 @@ func (m Model) View() string {
 	}
 
 	if m.ShowSearch {
-		var result string
-		for _, v := range m.SearchModal.Result {
-			result = lipgloss.JoinVertical(lipgloss.Left, result, v.Key)
-		}
-		return overlay.Composite(BuildSearchBox(m.SearchModal, result), base, overlay.Center, overlay.Center, 0, 0)
+		return overlay.Composite(BuildSearchBox(m.SearchModal, m.SearchModal.Result), base, overlay.Center, overlay.Center, 0, 0)
 	}
 
 	if m.ShowOverlay {

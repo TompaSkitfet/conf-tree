@@ -2,9 +2,9 @@ package ui
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
+	"github.com/TompaSkitfet/conf-tree/internal/ui/components/list"
 	"github.com/TompaSkitfet/conf-tree/internal/ui/components/modal"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
@@ -75,12 +75,7 @@ func BuildOverlay(content string) string {
 		Width(20).Height(2).Border(lipgloss.RoundedBorder()).Align(lipgloss.Center).Render(content)
 }
 
-func BuildSearchBox(m modal.SearchModal, r string) string {
-	lines := strings.Split(r, "\n")
-	if len(lines) > 10 {
-		lines = lines[:10]
-	}
-	resultString := strings.Join(lines, "\n")
+func BuildSearchBox(m modal.SearchModal, r list.ListModel) string {
 	search := BuildOverlay(m.View())
 	result := lipgloss.NewStyle().
 		Width(20).
@@ -89,7 +84,7 @@ func BuildSearchBox(m modal.SearchModal, r string) string {
 		Border(lipgloss.RoundedBorder()).
 		AlignHorizontal(lipgloss.Center).
 		AlignVertical(lipgloss.Top).
-		Render(resultString)
+		Render(r.View())
 
 	return lipgloss.JoinVertical(lipgloss.Left, search, result)
 }
