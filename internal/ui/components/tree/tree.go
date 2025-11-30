@@ -79,3 +79,13 @@ func (t Tree) Selected() *domain.Node {
 	}
 	return t.Nodes[t.Cursor]
 }
+
+func (t Tree) FindSelected(n *domain.Node) int {
+	for i, node := range t.Nodes {
+		if node == n {
+			return i
+		}
+	}
+	return 0
+
+}
