@@ -85,6 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var cmd tea.Cmd
 			m.SearchModal, cmd = m.SearchModal.Update(msg)
 			if m.SearchModal.Done {
+				m.Tree.Nodes = m.SearchModal.ResultNode.Parent.Children
 				m.ShowSearch = false
 			}
 			return m, cmd

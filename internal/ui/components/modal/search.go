@@ -9,11 +9,12 @@ import (
 )
 
 type SearchModal struct {
-	Input  textinput.Model
-	Root   *domain.Node
-	Result list.ListModel
-	Done   bool
-	Active bool
+	Input      textinput.Model
+	Root       *domain.Node
+	Result     list.ListModel
+	ResultNode *domain.Node
+	Done       bool
+	Active     bool
 }
 
 func NewSearchModal(r *domain.Node) SearchModal {
@@ -56,6 +57,17 @@ func (m SearchModal) Update(msg tea.Msg) (SearchModal, tea.Cmd) {
 		case !m.Active:
 			if msg.String() == "esc" {
 				m.Done = true
+			}
+			if msg.String() == "up" && m.Result.Cursor == 0 {
+				m.Active = true
+				m.Result.Active = false
+				m.Input.Focus()
+				return m, nil
+			}
+			if msg.String() == "enter" && len(m.Result.Items) > 0 {
+				m.ResultNode = m.Result.Items[m.Result.Cursor]
+				m.Done = true
+				return m, nil
 			}
 			updated, _ := m.Result.Update(msg)
 			m.Result = updated
