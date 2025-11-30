@@ -27,8 +27,7 @@ type Model struct {
 	SearchModal modal.SearchModal
 	InputModal  modal.InputModal
 	BoolModal   modal.BoolModal
-
-	Help help.Model
+	Help        help.Model
 
 	err error
 }
@@ -50,37 +49,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-		UpdatePanelWidths(m.width, m.height)
+		UpdatePanelWidths(msg.Width, msg.Height)
 
 	case tea.KeyMsg:
 		switch {
 		case m.err != nil && key.Matches(msg, Keys.Quit):
 			m.err = nil
-		case m.ShowOverlay && m.EditingBool:
-			var cmd tea.Cmd
-			m.BoolModal, cmd = m.BoolModal.Update(msg)
 
-			if m.BoolModal.Done {
-				current.Value = m.BoolModal.Value
-				current.Modified = true
-				m.ShowOverlay = false
-				m.EditingBool = false
-			}
-			return m, cmd
+		case m.ShowOverlay && m.EditingBool:
+			return m.updateBoolOverlay(msg, current)
 
 		case m.ShowOverlay && !m.EditingBool:
-			var cmd tea.Cmd
-			m.InputModal, cmd = m.InputModal.Update(msg)
-			if m.InputModal.Done {
-				if m.InputModal.Value != "" {
-					current.Value = m.InputModal.Value
-					current.Modified = true
-				}
-				m.ShowOverlay = false
-			}
-			return m, cmd
+			return m.updateInputOverlay(msg, current)
+
 		case m.ShowSearch:
 			var cmd tea.Cmd
 			m.SearchModal, cmd = m.SearchModal.Update(msg)
@@ -166,4 +147,30 @@ func (m Model) View() string {
 	}
 	helpView := m.Help.View(Keys)
 	return lipgloss.JoinVertical(lipgloss.Left, base, helpView)
+}
+
+func (m *Model) updateBoolOverlay(msg tea.KeyMsg, n *domain.Node) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.BoolModal, cmd = m.BoolModal.Update(msg)
+
+	if m.BoolModal.Done {
+		n.Value = m.BoolModal.Value
+		n.Modified = true
+		m.ShowOverlay = false
+		m.EditingBool = false
+	}
+	return m, cmd
+}
+
+func (m *Model) updateInputOverlay(msg tea.KeyMsg, n *domain.Node) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.InputModal, cmd = m.InputModal.Update(msg)
+	if m.InputModal.Done {
+		if m.InputModal.Value != "" {
+			n.Value = m.InputModal.Value
+			n.Modified = true
+		}
+		m.ShowOverlay = false
+	}
+	return m, cmd
 }
