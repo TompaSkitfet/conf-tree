@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
+	"github.com/TompaSkitfet/conf-tree/internal/ui/components/list"
+	"github.com/TompaSkitfet/conf-tree/internal/ui/components/modal"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/tree"
 )
@@ -71,4 +73,18 @@ func BuildBreadcrumbs(selectedNode *domain.Node) string {
 func BuildOverlay(content string) string {
 	return lipgloss.NewStyle().
 		Width(20).Height(2).Border(lipgloss.RoundedBorder()).Align(lipgloss.Center).Render(content)
+}
+
+func BuildSearchBox(m modal.SearchModal, r list.ListModel) string {
+	search := BuildOverlay(m.View())
+	result := lipgloss.NewStyle().
+		Width(20).
+		Height(10).
+		MaxHeight(12).
+		Border(lipgloss.RoundedBorder()).
+		AlignHorizontal(lipgloss.Center).
+		AlignVertical(lipgloss.Top).
+		Render(r.View())
+
+	return lipgloss.JoinVertical(lipgloss.Left, search, result)
 }
