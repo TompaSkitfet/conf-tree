@@ -21,13 +21,11 @@ type Model struct {
 	width    int
 	height   int
 
-	ShowSearch  bool
-	ShowOverlay bool
-	EditingBool bool
-	SearchModal modal.SearchModal
-	InputModal  modal.InputModal
-	BoolModal   modal.BoolModal
-	Help        help.Model
+	ActiveOverlay modal.OverlayType
+	SearchModal   modal.SearchModal
+	InputModal    modal.InputModal
+	BoolModal     modal.BoolModal
+	Help          help.Model
 
 	err error
 }
@@ -56,14 +54,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case m.err != nil && key.Matches(msg, Keys.Quit):
 			m.err = nil
 
-		case m.ShowOverlay && m.EditingBool:
-			return m.updateBoolOverlay(msg, current)
+		case m.ActiveOverlay != modal.OverlayNone:
+			switch m.ActiveOverlay {
+			case modal.OverlayEditBool:
+				return m.updateBoolOverlay(msg, current)
 
-		case m.ShowOverlay && !m.EditingBool:
-			return m.updateInputOverlay(msg, current)
+			case modal.OverlayEditInput:
+				return m.updateInputOverlay(msg, current)
 
-		case m.ShowSearch:
-			return m.updateSearchOverlay(msg)
+			case modal.OverlaySearch:
+				return m.updateSearchOverlay(msg)
+			}
 
 		case key.Matches(msg, Keys.Save):
 			err := config.SaveToFile(m.Root, m.FileData)
@@ -96,19 +97,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				switch v := current.Value.(type) {
 				case bool:
 					m.BoolModal = modal.NewBoolModal(v)
-					m.EditingBool = true
-					m.ShowOverlay = true
+					m.ActiveOverlay = modal.OverlayEditBool
 				default:
 					m.InputModal = modal.NewInputModal(fmt.Sprintf("%v", v))
-					m.EditingBool = false
-					m.ShowOverlay = true
+					m.ActiveOverlay = modal.OverlayEditInput
 				}
 			}
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
 		case key.Matches(msg, Keys.Search):
 			m.SearchModal = modal.NewSearchModal(m.Root)
-			m.ShowSearch = true
+			m.ActiveOverlay = modal.OverlaySearch
 		}
 	}
 	return m, nil
@@ -127,17 +126,17 @@ func (m Model) View() string {
 		return overlay.Composite(m.err.Error(), base, overlay.Center, overlay.Center, 0, 0)
 	}
 
-	if m.ShowSearch {
+	switch m.ActiveOverlay {
+
+	case modal.OverlaySearch:
 		return overlay.Composite(BuildSearchBox(m.SearchModal, m.SearchModal.Result), base, overlay.Center, overlay.Center, 0, 0)
+
+	case modal.OverlayEditBool:
+		return overlay.Composite(BuildOverlay(m.BoolModal.View()), base, overlay.Center, overlay.Center, 0, 0)
+	case modal.OverlayEditInput:
+		return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
 	}
 
-	if m.ShowOverlay {
-		if m.EditingBool {
-			return overlay.Composite(BuildOverlay(m.BoolModal.View()), base, overlay.Center, overlay.Center, 0, 0)
-		} else {
-			return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
-		}
-	}
 	helpView := m.Help.View(Keys)
 	return lipgloss.JoinVertical(lipgloss.Left, base, helpView)
 }
@@ -149,8 +148,7 @@ func (m *Model) updateBoolOverlay(msg tea.KeyMsg, n *domain.Node) (tea.Model, te
 	if m.BoolModal.Done {
 		n.Value = m.BoolModal.Value
 		n.Modified = true
-		m.ShowOverlay = false
-		m.EditingBool = false
+		m.ActiveOverlay = modal.OverlayNone
 	}
 	return m, cmd
 }
@@ -163,7 +161,7 @@ func (m *Model) updateInputOverlay(msg tea.KeyMsg, n *domain.Node) (tea.Model, t
 			n.Value = m.InputModal.Value
 			n.Modified = true
 		}
-		m.ShowOverlay = false
+		m.ActiveOverlay = modal.OverlayNone
 	}
 	return m, cmd
 }
@@ -174,7 +172,7 @@ func (m *Model) updateSearchOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if m.SearchModal.Done {
 		m.Tree.Nodes = m.SearchModal.ResultNode.Parent.Children
 		m.Tree.Cursor = m.Tree.FindSelected(m.SearchModal.ResultNode)
-		m.ShowSearch = false
+		m.ActiveOverlay = modal.OverlayNone
 	}
 	return m, cmd
 }
