@@ -1,4 +1,4 @@
-package list
+package modal
 
 import (
 	"github.com/TompaSkitfet/conf-tree/internal/domain"

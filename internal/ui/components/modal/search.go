@@ -3,7 +3,6 @@ package modal
 import (
 	"github.com/TompaSkitfet/conf-tree/internal/domain"
 	search "github.com/TompaSkitfet/conf-tree/internal/search"
-	"github.com/TompaSkitfet/conf-tree/internal/ui/components/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -11,7 +10,7 @@ import (
 type SearchModal struct {
 	Input      textinput.Model
 	Root       *domain.Node
-	Result     list.ListModel
+	Result     ListModel
 	ResultNode *domain.Node
 	Done       bool
 	Active     bool
@@ -27,7 +26,7 @@ func NewSearchModal(r *domain.Node) SearchModal {
 		Done:   false,
 		Root:   r,
 		Active: true,
-		Result: list.NewListModel(nil, 10),
+		Result: NewListModel(nil, 10),
 	}
 }
 
