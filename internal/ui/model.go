@@ -32,11 +32,10 @@ type Model struct {
 
 func New(root *domain.Node, fileData domain.FileData) Model {
 	return Model{
-		Tree:       tree.New(root.Children),
-		Root:       root,
-		FileData:   fileData,
-		InputModal: modal.InputModal{},
-		Help:       help.New(),
+		Tree:     tree.New(root.Children),
+		Root:     root,
+		FileData: fileData,
+		Help:     help.New(),
 	}
 }
 
@@ -91,18 +90,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Tree.MoveDown()
 
 		case key.Matches(msg, Keys.Right):
-			if current.Type != domain.ValueNode {
+			switch current.Type {
+			case domain.ObjectNode:
 				m.Tree.MoveRight()
-			} else if current.Type == domain.ValueNode {
+
+			case domain.ValueNode:
 				switch v := current.Value.(type) {
 				case bool:
 					m.BoolModal = modal.NewBoolModal(v)
 					m.ActiveOverlay = modal.OverlayEditBool
+					return m, nil
+
 				default:
 					m.InputModal = modal.NewInputModal(fmt.Sprintf("%v", v))
 					m.ActiveOverlay = modal.OverlayEditInput
+					return m, nil
 				}
+			case domain.ArrayNode:
+				if len(current.Children) == 0 {
+					//TODO: Skapa ett nytt värde istället
+				} else {
+					m.Tree.MoveRight()
+				}
+				return m, nil
 			}
+
 		case key.Matches(msg, Keys.Left):
 			m.Tree.MoveLeft()
 		case key.Matches(msg, Keys.Search):
@@ -133,8 +145,10 @@ func (m Model) View() string {
 
 	case modal.OverlayEditBool:
 		return overlay.Composite(BuildOverlay(m.BoolModal.View()), base, overlay.Center, overlay.Center, 0, 0)
+
 	case modal.OverlayEditInput:
 		return overlay.Composite(BuildOverlay(m.InputModal.View()), base, overlay.Center, overlay.Center, 0, 0)
+
 	}
 
 	helpView := m.Help.View(Keys)
