@@ -63,14 +63,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateInputOverlay(msg, current)
 
 		case m.ShowSearch:
-			var cmd tea.Cmd
-			m.SearchModal, cmd = m.SearchModal.Update(msg)
-			if m.SearchModal.Done {
-				m.Tree.Nodes = m.SearchModal.ResultNode.Parent.Children
-				m.Tree.Cursor = m.Tree.FindSelected(m.SearchModal.ResultNode)
-				m.ShowSearch = false
-			}
-			return m, cmd
+			return m.updateSearchOverlay(msg)
 
 		case key.Matches(msg, Keys.Save):
 			err := config.SaveToFile(m.Root, m.FileData)
@@ -171,6 +164,17 @@ func (m *Model) updateInputOverlay(msg tea.KeyMsg, n *domain.Node) (tea.Model, t
 			n.Modified = true
 		}
 		m.ShowOverlay = false
+	}
+	return m, cmd
+}
+
+func (m *Model) updateSearchOverlay(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+	m.SearchModal, cmd = m.SearchModal.Update(msg)
+	if m.SearchModal.Done {
+		m.Tree.Nodes = m.SearchModal.ResultNode.Parent.Children
+		m.Tree.Cursor = m.Tree.FindSelected(m.SearchModal.ResultNode)
+		m.ShowSearch = false
 	}
 	return m, cmd
 }
